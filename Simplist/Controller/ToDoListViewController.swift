@@ -9,7 +9,7 @@
 import UIKit
 import CoreData
 
-class ToDoListViewController: UITableViewController, UISearchBarDelegate {
+class ToDoListViewController: UITableViewController {
 
     var itemArray = [Item]()
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -18,7 +18,6 @@ class ToDoListViewController: UITableViewController, UISearchBarDelegate {
         super.viewDidLoad()
         
         //print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        
         loadItems()
     }
 
@@ -81,14 +80,51 @@ class ToDoListViewController: UITableViewController, UISearchBarDelegate {
         tableView.reloadData()
     }
 
-    func loadItems() {
-        let request : NSFetchRequest<Item> = Item.fetchRequest()
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
         do {
             itemArray = try context.fetch(request)
         } catch {
             print(error)
         }
+        
+        tableView.reloadData()
     }
     
+}
+
+extension ToDoListViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        loadItems(with: request)
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            loadItems()
+        }
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+        searchBar.text = ""
+        loadItems()
+    }
+    
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+        searchBar.showsCancelButton = true
+        UIView.animate(withDuration: 0.1) {
+            searchBar.layoutIfNeeded()
+        }
+    }
+    
+    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+        searchBar.showsCancelButton = false
+        UIView.animate(withDuration: 0.1) {
+            searchBar.layoutIfNeeded()
+        }
+    }
 }
 
