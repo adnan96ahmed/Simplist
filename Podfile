@@ -6,5 +6,6 @@ target 'Simplist' do
 
   # Pods for Simplist
 pod 'RealmSwift'
+pod 'SwipeCellKit'
 
 end
